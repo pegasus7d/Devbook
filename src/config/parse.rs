@@ -21,3 +21,33 @@ pub fn load_config(path: &Path) -> Result<DevConfig, DevBookError> {
 
     Ok(DevConfig::new(actions))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+
+    #[test]
+    fn load_config_parses_flat_yaml() {
+        let mut f = tempfile::NamedTempFile::new().unwrap();
+        writeln!(f, "run: npm run dev").unwrap();
+        writeln!(f, "test: npm test").unwrap();
+        f.flush().unwrap();
+        let config = load_config(f.path()).unwrap();
+        assert_eq!(config.get_command("run"), Some("npm run dev"));
+        assert_eq!(config.get_command("test"), Some("npm test"));
+    }
+
+    #[test]
+    fn load_config_invalid_yaml_returns_error() {
+        let mut f = tempfile::NamedTempFile::new().unwrap();
+        writeln!(f, "not: valid: yaml: [[[").unwrap();
+        f.flush().unwrap();
+        let result = load_config(f.path());
+        assert!(result.is_err());
+        if let Err(DevBookError::ParseError { .. }) = result {
+        } else {
+            panic!("expected ParseError");
+        }
+    }
+}

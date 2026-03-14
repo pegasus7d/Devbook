@@ -56,3 +56,35 @@ impl fmt::Display for DevBookError {
 
 // Mark DevBookError as an error type so it works with ? and with libraries that expect std::error::Error.
 impl std::error::Error for DevBookError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn error_display_config_not_found() {
+        let e = DevBookError::ConfigNotFound;
+        let s = format!("{}", e);
+        assert!(s.contains("No dev.yaml"));
+        assert!(s.contains("runbook.yaml"));
+    }
+
+    #[test]
+    fn error_display_unknown_action() {
+        let e = DevBookError::UnknownAction("lint".to_string());
+        let s = format!("{}", e);
+        assert!(s.contains("lint"));
+        assert!(s.contains("Unknown action"));
+    }
+
+    #[test]
+    fn error_display_parse_error() {
+        let e = DevBookError::ParseError {
+            path: PathBuf::from("/tmp/dev.yaml"),
+            message: "invalid yaml".to_string(),
+        };
+        let s = format!("{}", e);
+        assert!(s.contains("parse"));
+        assert!(s.contains("invalid yaml"));
+    }
+}

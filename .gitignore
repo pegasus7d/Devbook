@@ -17,8 +17,3 @@ Thumbs.db
 .env
 .env.local
 *.local
-
-
-# Added by cargo
-
-/target
